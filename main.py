@@ -44,20 +44,6 @@ def get_company_info(siret):
 
     return company_name, company_status
 
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive"
-]
-
-creds = ServiceAccountCredentials.from_json_keyfile_name("cred.json", scope)
-client = gspread.authorize(creds)
-
-sheet = client.open("siret numbers").sheet1
-
-siret_numbers = sheet.col_values(1)
-
 def get_update_sheet(sheet, i, siret_number, delay=30):
     try:
         saved_name = sheet.cell(i, 2).value
@@ -116,7 +102,25 @@ def get_update_sheet(sheet, i, siret_number, delay=30):
         time.sleep(delay)
         get_update_sheet(sheet, i, siret_number, delay)
 
-for i, siret_number in enumerate(siret_numbers, start=1):
-    get_update_sheet(sheet, i, siret_number, 30)
+
+
+if __name__ == "__main__":
+
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive"
+    ]
+
+    creds = ServiceAccountCredentials.from_json_keyfile_name("cred.json", scope)
+    client = gspread.authorize(creds)
+
+    sheet = client.open("siret numbers").sheet1
+
+    siret_numbers = sheet.col_values(1)
+
+    for i, siret_number in enumerate(siret_numbers, start=1):
+        get_update_sheet(sheet, i, siret_number, 30)
 
 
