@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 import cloudscraper
 from urllib3.exceptions import MaxRetryError, NewConnectionError
-
+import os
 
 def get_company_info(siret):
     siret = siret.replace(" ", "")
@@ -103,6 +103,21 @@ def get_update_sheet(sheet, i, siret_number, delay=30):
         get_update_sheet(sheet, i, siret_number, delay)
 
 
+def check_last_line():
+    last_line = 1
+    file = "line.txt"
+    mode = 'r' if os.path.exists(file) else "w+"
+    with open(file, mode) as f:
+        last_line = f.readline()
+        if last_line == None or last_line == "":
+            last_line = 1
+
+    return int(last_line)
+
+def write_last_line(last_line):
+    with open("line.txt", "w+") as f:
+        f.write(str(last_line))
+
 
 if __name__ == "__main__":
 
@@ -120,7 +135,19 @@ if __name__ == "__main__":
 
     siret_numbers = sheet.col_values(1)
 
-    for i, siret_number in enumerate(siret_numbers, start=1):
+    start_check = check_last_line()
+
+    print(f"Commence a checker par la ligne {start_check}")
+
+    #on recupere le numero de column de depart
+    cell_start = sheet.cell(start_check, 1)
+
+    print(f" On commence par le siret N° {cell_start.value} ligne N° {cell_start.row}")
+    
+    siret_numbers = siret_numbers[siret_numbers.index(cell_start.value):]
+
+    for i, siret_number in enumerate(siret_numbers, start=start_check):
+        write_last_line(i)
         get_update_sheet(sheet, i, siret_number, 30)
 
 
